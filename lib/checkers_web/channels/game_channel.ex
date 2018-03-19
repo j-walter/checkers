@@ -2,22 +2,34 @@ defmodule CheckersWeb.GameChannel do
 
   use CheckersWeb, :channel
   alias Checkers.Game
-  alias Checkers.GameAgent
 
-  def join("game:" <> name, socket) do
-    if authorized?(socket, name) do
-      game = GameAgent.get(name) || Game.new()
-      GameAgent.put(name, game)
-      socket = socket
-      |> assign(:name, name)
-      {:ok, Game.client_view(game), socket}
-    else
-      {:error, %{reason: "unauthorized"}}
+  def join("game:" <> name, _payload, socket) do
+    game = Game.get(name)
+    cond do
+      authenticated?(socket, name) and !game ->
+        Game.new(name, socket.assigns[:user_details])
+        socket
+        |> assign(:name, name)
+        IO.inspect(Game.client_view(name))
+        {:ok, Game.client_view(name), socket}
+      !!game ->
+        socket
+        |> assign(:name, name)
+        {:ok, Game.client_view(name), socket}
+      true ->
+        {:error, %{reason: "unauthorized"}}
     end
   end
 
-  defp authorized?(socket, name) do
-    true
+  defp authenticated?(socket, name) do
+    !!Map.get(socket.assigns, :user_details, nil)
+  end
+
+
+  def handle_in("move", %{"old_index" => old_index, "new_index" => new_index}, socket) do
+    name = socket.assigns[:name]
+    game = Game.get(name)
+    {:reply, {:ok, Game.client_view(game)}, socket}
   end
 
 end

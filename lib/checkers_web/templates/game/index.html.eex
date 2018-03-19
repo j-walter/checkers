@@ -1,0 +1,33 @@
+
+<h5>Game Lobby</h5>
+<br>
+<div id="game-list-bar">
+<%= if !!Checkers.AuthAgent.get(Plug.Conn.get_session(@conn, "user_token")) do %>
+<a class="btn btn-primary" href="#create">Create</a>
+<% else %>
+<a class="btn btn-primary" href="/auth/google">Create</a>
+<% end %>
+</div>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+<tbody>
+
+<%= for game <- @games do %>
+<tr>
+<td><%= game.name %></td>
+<%= if 2 === length(game.players) do %>
+<td>In progress</td>
+<% else %>
+<td>Awaiting players</td>
+<% end %>
+<td><button type="button" class="btn btn-primary">Join</button></td>
+</tr>
+<% end %>
+</tbody>
+</table>

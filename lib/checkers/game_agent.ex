@@ -3,6 +3,10 @@ defmodule Checkers.GameAgent do
 
   ## Public Interface
 
+  def init(v) do
+    {:ok, v}
+  end
+
   def start_link() do
     state0 = %{}
     GenServer.start_link(__MODULE__, state0, name: __MODULE__)
@@ -16,6 +20,14 @@ defmodule Checkers.GameAgent do
     GenServer.call(__MODULE__, {:put, key, val})
   end
 
+  def keys do
+    GenServer.call(__MODULE__, {:keys})
+  end
+
+  def list do
+    GenServer.call(__MODULE__, {:list})
+  end
+
   ## Process Implementation
 
   def handle_call({:get, key}, _from, state) do
@@ -25,4 +37,13 @@ defmodule Checkers.GameAgent do
   def handle_call({:put, key, val}, _from, state) do
     {:reply, :ok, Map.put(state, key, val)}
   end
+
+  def handle_call({:keys}, _from, state) do
+    {:reply, Map.keys(state), state}
+  end
+
+  def handle_call({:list}, _from, state) do
+    {:reply, Map.values(state), state}
+  end
+
 end

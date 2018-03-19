@@ -3,6 +3,10 @@ defmodule Checkers.AuthAgent do
 
   ## Public Interface
 
+  def init(v) do
+    {:ok, v}
+  end
+
   def start_link() do
     state0 = %{}
     GenServer.start_link(__MODULE__, state0, name: __MODULE__)

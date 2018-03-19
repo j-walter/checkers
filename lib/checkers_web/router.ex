@@ -29,7 +29,7 @@ defmodule CheckersWeb.Router do
 
   scope "/", CheckersWeb do
     pipe_through :browser
-    get "/", PageController, :index
+    get "/", GameController, :index
     get "/*path", RedirectController, :index
   end
 

@@ -6,3 +6,23 @@
 *:after {
     box-sizing: inherit;
 }
+#game-list-bar {
+  margin-bottom:8px;
+  float:right;
+}
+.tile {
+  font-size:2em;
+  border:1px solid #000;
+  text-align:center;
+  width:11%;
+  display: inline-block;
+  height:50px;
+  padding:2px;
+}
+.piece {
+  height: 90%;
+  width: 40%;
+  margin:auto;
+  text-align: center;
+  border-radius: 50%;
+}

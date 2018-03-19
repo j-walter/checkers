@@ -20,7 +20,10 @@ exports.config = {
       // }
     },
     stylesheets: {
-      joinTo: "css/app.css"
+      joinTo: "css/app.css",
+      order: {
+        after: ["priv/static/css/app.scss"]
+      }
     },
     templates: {
       joinTo: "js/app.js"
@@ -66,8 +69,8 @@ exports.config = {
   npm: {
     enabled: true,
     globals: {
-      _: 'underscore',
       $: 'jquery',
+      jQuery: 'jquery',
       bootstrap: 'bootstrap'
     }
   }

@@ -9,27 +9,30 @@
 
     <title>Hello Checkers!</title>
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
+    <%= tag :meta, name: "user_token", content: Plug.Conn.get_session(@conn, "user_token") || "" %>
   </head>
 
   <body>
+
     <div class="container">
+        <br>
       <header class="header">
-        <nav role="navigation">
-          <ul class="nav nav-pills pull-right">
-            <li><a href="http://www.phoenixframework.org/docs">Get Started</a></li>
-          </ul>
-        </nav>
-        <span class="logo"></span>
+        <h2>Checkers</h2>
       </header>
 
+    <%= unless is_nil(get_flash(@conn, :info)) do %>
       <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
+    <% end %>
+    <%= unless is_nil(get_flash(@conn, :info)) do %>
       <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+    <% end %>
 
-      <main role="main">
+      <main role="main" id="root">
         <%= render @view_module, @view_template, assigns %>
       </main>
 
     </div> <!-- /container -->
     <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+
   </body>
 </html>

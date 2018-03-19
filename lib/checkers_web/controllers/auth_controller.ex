@@ -5,10 +5,11 @@ defmodule CheckersWeb.AuthController do
   plug Ueberauth
 
   def new(%{assigns: %{ueberauth_auth: auth}} = conn, params) do
-    IO.inspect(auth)
     conn = if Map.get(auth.extra.raw_info.user, "email_verified", false) do
-        #AuthAgent.put()
+      token = :base64.encode(:crypto.strong_rand_bytes(64))
+      AuthAgent.put(token, auth)
       put_session(conn, "user_auth", auth)
+      |> put_session("user_token", token)
     end
     conn
     |> Phoenix.Controller.redirect(to: "/")

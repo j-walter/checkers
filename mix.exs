@@ -42,7 +42,7 @@ defmodule Checkers.Mixfile do
       {:gettext, "~> 0.11"},
       {:cowboy, "~> 1.0"},
       {:distillery, "~> 1.5", runtime: false},
-	    {:ueberauth_google, "~> 0.7"}
+	  {:ueberauth_google, "~> 0.7"}
     ]
   end
 

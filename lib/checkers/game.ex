@@ -25,7 +25,6 @@ defmodule Checkers.Game do
         end)
       }
     )
-    get(name)
   end
 
   def valid_moves_helper(idx, piece, board, invert) do
@@ -59,7 +58,7 @@ defmodule Checkers.Game do
   def valid_moves(name, user_details) do
     game = get(name)
     player_index = find(user_details["email"], game[:players])
-    Enum.reduce(0..31, %{}, fn(x, acc) ->
+    Enum.reduce(Map.get(game[:pending_piece] || %{}, :idx, nil) || 0..31, %{}, fn(x, acc) ->
       piece = Map.get(game[:tiles], x)
       if !!piece and piece[:player] === player_index do
         Map.put(acc, x, valid_moves_helper(x, piece, game[:tiles], 0))
@@ -76,15 +75,16 @@ defmodule Checkers.Game do
     # ensure it is the player's turn and validate that the piece being moved is owned by the player
     if rem(game[:turn], 2) === player_index and !!piece_from and player_index === piece_from[:player] and Enum.member?(valid_moves_helper(from, piece_from, game[:tiles], 0), to) do
       # remove the old piece
-      Map.merge(game, %{tiles: List.replace_at(List.replace_at(game[:tiles], from, nil), to, piece_from)})
+      GameAgent.put(name,
+        Map.merge(game, %{tiles: Map.put(Map.put(game[:tiles], from, nil), to, piece_from), pending_piece: nil})
+      )
     else
       game
     end
 
   end
 
-  def client_view(name) do
-    game = get(name)
+  def client_view(game) do
     Map.merge(game, %{tiles: Map.values(game[:tiles])})
   end
 

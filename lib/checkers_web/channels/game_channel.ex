@@ -23,7 +23,6 @@ defmodule CheckersWeb.GameChannel do
 
   def handle_in("valid_moves", %{}, socket) do
     name = socket.assigns[:name]
-    IO.inspect(name)
     {:reply, {:ok, Game.valid_moves(name, socket.assigns[:user_details])}, socket}
   end
 

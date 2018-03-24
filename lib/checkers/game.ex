@@ -10,9 +10,19 @@ defmodule Checkers.Game do
       %{
         name: name,
         turn: 0,
+        pending_piece: nil,
         players: [user_details["email"]],
         # a game is composed of 32 pieces
-        tiles: (for _ <- 0..11, do: %{player: 0, king: false, pending_move: false}) ++ (for _ <- 0..7, do: nil) ++ (for _ <- 0..11, do: %{player: 1, king: false, pending_move: false})
+        tiles: Enum.reduce(0..31, %{}, fn(x, acc) ->
+          cond do
+            x <= 11 ->
+              Map.put(acc, x,  %{player: 0, king: false, pending_move: false})
+            20 <= x ->
+              Map.put(acc, x,  %{player: 1, king: false, pending_move: false})
+            true ->
+              Map.put(acc, x, nil)
+          end
+        end)
       }
     )
     get(name)
@@ -25,10 +35,10 @@ defmodule Checkers.Game do
     offset = if rem(row, 2) === 0, do: -1, else: 1
     move1 = rem(idx, 4) + (row * 4)
     move2 = (if row === Integer.floor_div(move1 + offset, 4), do: move1 + offset, else: nil)
-    move1 = (if !!Enum.at(board, move1, nil), do: move1 + (3 * offset), else: move1)
-    move2 = (if !!move2 and !!Enum.at(board, move2, nil), do: (move2 + (3 * offset)) + offset, else: move2 )
+    move1 = (if !!Map.get(board, move1, nil), do: move1 + (3 * offset), else: move1)
+    move2 = (if !!move2 and !!Map.get(board, move2, nil), do: (move2 + (3 * offset)) + offset, else: move2 )
     moves = if !!move2, do: [move1 , move2], else: [move1]
-    Enum.filter(moves, fn(x) -> !Enum.at(board, x, []) and 0 <= x and x < 32 end) ++ (if piece[:king] and invert === 0, do: valid_moves_helper(idx, piece, board, 1), else: [])
+    Enum.filter(moves, fn(x) -> !Map.get(board, x, []) and 0 <= x and x < 32 end) ++ (if piece[:king] and invert === 0, do: valid_moves_helper(idx, piece, board, 1), else: [])
   end
 
   def find_helper(find, list, idx) do
@@ -48,10 +58,9 @@ defmodule Checkers.Game do
 
   def valid_moves(name, user_details) do
     game = get(name)
-    IO.inspect(game)
     player_index = find(user_details["email"], game[:players])
     Enum.reduce(0..31, %{}, fn(x, acc) ->
-      piece = Enum.at(game[:tiles], x)
+      piece = Map.get(game[:tiles], x)
       if !!piece and piece[:player] === player_index do
         Map.put(acc, x, valid_moves_helper(x, piece, game[:tiles], 0))
       else
@@ -60,9 +69,23 @@ defmodule Checkers.Game do
     end)
   end
 
+  def move(name, user_details, from, to) do
+    game = get(name)
+    piece_from = Enum.at(game[:tiles], from, nil)
+    player_index = find(user_details["email"], game[:players])
+    # ensure it is the player's turn and validate that the piece being moved is owned by the player
+    if rem(game[:turn], 2) === player_index and !!piece_from and player_index === piece_from[:player] and Enum.member?(valid_moves_helper(from, piece_from, game[:tiles], 0), to) do
+      # remove the old piece
+      Map.merge(game, %{tiles: List.replace_at(List.replace_at(game[:tiles], from, nil), to, piece_from)})
+    else
+      game
+    end
+
+  end
+
   def client_view(name) do
     game = get(name)
-    game
+    Map.merge(game, %{tiles: Map.values(game[:tiles])})
   end
 
   def list do

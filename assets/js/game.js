@@ -4,9 +4,18 @@ export default class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = this.props.state;
+    var getMoves = this.getMoves.bind(this);
+  }
+
+  getMoves() {
+    this.props.channel.push("valid_moves", {}).receive("ok", state => {
+        console.info('test');
+      console.info(state);
+    });
   }
 
   render() {
+      this.getMoves();
     return (
       <div>
         <h4>

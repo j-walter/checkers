@@ -20,7 +20,6 @@ function start(gameName) {
   channel.join()
     .receive("ok", state0 => {
       console.log("Joined successfully", state0);
-      console.info(state0);
       ready(channel, state0);
     })
     .receive("error", resp => { console.log("Unable to join", resp); });

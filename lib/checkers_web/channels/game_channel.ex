@@ -8,14 +8,10 @@ defmodule CheckersWeb.GameChannel do
     cond do
       authenticated?(socket, name) and !game ->
         Game.new(name, socket.assigns[:user_details])
-        socket
-        |> assign(:name, name)
-        IO.inspect(Game.client_view(name))
-        {:ok, Game.client_view(name), socket}
+        {:ok, Game.client_view(name), socket |> assign(:name, name)}
       !!game ->
-        socket
-        |> assign(:name, name)
-        {:ok, Game.client_view(name), socket}
+
+        {:ok, Game.client_view(name), socket |> assign(:name, name)}
       true ->
         {:error, %{reason: "unauthorized"}}
     end
@@ -25,11 +21,11 @@ defmodule CheckersWeb.GameChannel do
     !!Map.get(socket.assigns, :user_details, nil)
   end
 
-
-  def handle_in("move", %{"old_index" => old_index, "new_index" => new_index}, socket) do
+  def handle_in("valid_moves", %{}, socket) do
     name = socket.assigns[:name]
-    game = Game.get(name)
-    {:reply, {:ok, Game.client_view(game)}, socket}
+    IO.inspect(name)
+    {:reply, {:ok, Game.valid_moves(name, socket.assigns[:user_details])}, socket}
   end
+
 
 end

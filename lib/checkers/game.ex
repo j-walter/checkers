@@ -27,7 +27,7 @@ defmodule Checkers.Game do
     )
   end
 
-  def valid_moves_helper(idx, piece, board, invert) do
+  def valid_moves_helper(idx, piece, board, invert, blacklist) do
     player_index = piece[:player]
     direction = if player_index === invert, do: 1, else: -1
     row = Integer.floor_div(idx, 4) + direction
@@ -37,7 +37,7 @@ defmodule Checkers.Game do
     move1 = (if !!Map.get(board, move1, nil), do: move1 + (3 * offset), else: move1)
     move2 = (if !!move2 and !!Map.get(board, move2, nil), do: (move2 + (3 * offset)) + offset, else: move2 )
     moves = if !!move2, do: [move1 , move2], else: [move1]
-    Enum.filter(moves, fn(x) -> !Map.get(board, x, []) and 0 <= x and x < 32 end) ++ (if piece[:king] and invert === 0, do: valid_moves_helper(idx, piece, board, 1), else: [])
+    Enum.filter(moves, fn(x) -> !Map.get(board, x, []) and !Enum.member?(blacklist, x) and 0 <= x and x < 32 end) ++ (if piece[:king] and invert === 0, do: valid_moves_helper(idx, piece, board, 1, blacklist), else: [])
   end
 
   def find_helper(find, list, idx) do
@@ -61,7 +61,7 @@ defmodule Checkers.Game do
     Enum.reduce(Map.get(game[:pending_piece] || %{}, :idx, nil) || 0..31, %{}, fn(x, acc) ->
       piece = Map.get(game[:tiles], x)
       if !!piece and piece[:player] === player_index do
-        Map.put(acc, x, valid_moves_helper(x, piece, game[:tiles], 0))
+        Map.put(acc, x, valid_moves_helper(x, piece, game[:tiles], 0, []))
       else
         Map.put(acc, x, [])
       end
@@ -73,10 +73,10 @@ defmodule Checkers.Game do
     piece_from = Enum.at(game[:tiles], from, nil)
     player_index = find(user_details["email"], game[:players])
     # ensure it is the player's turn and validate that the piece being moved is owned by the player
-    if rem(game[:turn], 2) === player_index and !!piece_from and player_index === piece_from[:player] and Enum.member?(valid_moves_helper(from, piece_from, game[:tiles], 0), to) do
+    if rem(game[:turn], 2) === player_index and !!piece_from and player_index === piece_from[:player] and Enum.member?(valid_moves_helper(from, piece_from, game[:tiles], 0, []), to) do
       # remove the old piece
       GameAgent.put(name,
-        Map.merge(game, %{tiles: Map.put(Map.put(game[:tiles], from, nil), to, piece_from), pending_piece: nil})
+        Map.merge(game, %{tiles: Map.put(Map.put(game[:tiles], from, nil), to, piece_from)})
       )
     else
       game

@@ -18,6 +18,7 @@ defmodule Checkers.GameAgent do
 
   def put(key, val) do
     GenServer.call(__MODULE__, {:put, key, val})
+    get(key)
   end
 
   def keys do

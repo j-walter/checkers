@@ -16,6 +16,9 @@ function start(gameName) {
   if (!gameName) {
       gameName = prompt("Please specify a game name", "Game");
   }
+  if(gameName === null) {
+    return;
+  }
   let channel = socket.channel("game:" + gameName, {});
   channel.join()
     .receive("ok", state0 => {
@@ -27,7 +30,11 @@ function start(gameName) {
 }
 
 $(window).on('hashchange',function() {
+    location.hash.substring(1, 5)
     if (location.hash.slice(1) == "create") {
-        start(null);
+      start(null);
+    }
+    else if (location.hash.substring(1, 5) == "join") {
+      start(location.hash.slice(6));
     }
 });

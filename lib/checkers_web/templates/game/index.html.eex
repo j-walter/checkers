@@ -26,7 +26,7 @@
 <% else %>
 <td>Awaiting players</td>
 <% end %>
-<td><button type="button" class="btn btn-primary">Join</button></td>
+<td><a class="btn btn-primary" href="#join-<%=game.name%>">Join</a></td>
 </tr>
 <% end %>
 </tbody>

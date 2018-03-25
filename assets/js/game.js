@@ -5,11 +5,21 @@ export default class Game extends React.Component {
     super(props);
     this.state = this.props.state;
     var getMoves = this.getMoves.bind(this);
+    this.props.channel.on("update", state => {
+       this.setState(state)
+    });
   }
 
   getMoves() {
     this.props.channel.push("valid_moves", {}).receive("ok", state => {
       console.info(state);
+    });
+  }
+
+  // from is the current index of the piece being moved - to is an array of the hops the client wishes to perform
+  move(from, to) {
+    this.props.channel.push("move", {from: from, to: to}).receive("ok", state => {
+        this.setState(state);
     });
   }
 

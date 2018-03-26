@@ -43,7 +43,6 @@ export default class Game extends React.Component {
   }
 
   play() {
-  	console.log(this);
     this.props.channel.push("play", {}).receive("ok", state => {
         console.info("attempting to join as player");
     });
@@ -164,7 +163,7 @@ export default class Game extends React.Component {
     return (
   		<div>
   			<h4>
-		      Turn: {this.state.turn}
+		      {currentUser == this.state.players[this.state.turn] ? "Your turn" : "Player 2's turn"}
 		    </h4>
 		    {buttonsDiv}
 	  		<Stage width={window.innerWidth} height={window.innerHeight}>

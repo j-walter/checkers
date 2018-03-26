@@ -32,14 +32,14 @@ defmodule CheckersWeb.GameChannel do
     name = socket.assigns[:name]
     game = Game.move(name, socket.assigns[:user_details], pending_piece || [])
     broadcast_update(game)
-    #{:reply, {:ok, Game.client_view(game)}, socket}
+    {:reply, {:ok, Game.client_view(game)}, socket}
   end
 
   def handle_in("play", %{}, socket) do
     name = socket.assigns[:name]
     game = Game.play(name, socket.assigns[:user_details])
     broadcast_update(game)
-    #{:reply, {:ok, Game.client_view(game)}, socket}
+    {:reply, {:ok, Game.client_view(game)}, socket}
   end
 
   intercept ["update"]

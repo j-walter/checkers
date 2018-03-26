@@ -16,6 +16,8 @@ export default class Game extends React.Component {
     this.handleClick = this.handleClick.bind(this);
     this.play = this.play.bind(this);
     this.move = this.move.bind(this);
+    this.reset = this.reset.bind(this);
+    this.disconnect = this.disconnect(this);
 
     console.log(this.state);
 
@@ -23,6 +25,10 @@ export default class Game extends React.Component {
     this.props.channel.on("update", state => {
        this.setState(state)
     });
+  }
+
+  componentWillUnmount(){
+  	this.reset();
   }
 
   handleClick(event){
@@ -50,6 +56,11 @@ export default class Game extends React.Component {
 
   reset() {
   	this.setState({"pending_piece":null});
+  }
+
+  disconnect() {
+  	this.reset();
+  	// stuff to disconnect socket
   }
 	
 	render() {

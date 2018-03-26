@@ -12,13 +12,19 @@ export default class Game extends React.Component {
 
   getMoves() {
     this.props.channel.push("valid_moves", {pending_piece: this.state.pending_piece}).receive("ok", state => {
-      console.info(state);
+      return state;
     });
   }
 
   move() {
     this.props.channel.push("move", {pending_piece: this.state.pending_piece}).receive("ok", state => {
-        this.setState(state);
+        console.info(this.state.pending_piece);
+    });
+  }
+
+  play() {
+    this.props.channel.push("play", {}).receive("ok", state => {
+        console.info("attempting to join as player");
     });
   }
 

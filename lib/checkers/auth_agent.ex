@@ -13,7 +13,6 @@ defmodule Checkers.AuthAgent do
   end
 
   def get(key) do
-    IO.puts("get")
     GenServer.call(__MODULE__, {:get, key})
   end
 

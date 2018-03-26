@@ -17,7 +17,7 @@ export default class Game extends React.Component {
     this.play = this.play.bind(this);
     this.move = this.move.bind(this);
     this.reset = this.reset.bind(this);
-    this.disconnect = this.disconnect(this);
+    this.disconnect = this.disconnect.bind(this);
 
     console.log(this.state);
 
@@ -59,8 +59,8 @@ export default class Game extends React.Component {
   }
 
   disconnect() {
-  	this.reset();
-  	// stuff to disconnect socket
+  	this.props.channel.disconnect();
+  	location.reload();
   }
 	
 	render() {
@@ -123,58 +123,24 @@ export default class Game extends React.Component {
 
   	var buttonsDiv;
   	var currentUser = document.getElementsByTagName('meta').user_email.content;
+	var currentUserIdx = this.state.players.indexOf(currentUser);
 
-  	switch(this.state.players.indexOf(currentUser)){
-  		default:
-  			buttonsDiv = spectateUI;
-  			break;
-  		// not player of game
-  		case -1:
-  			// open spot available
-  			if(this.state.players.length < 2){
-  				buttonsDiv = joinUI;
-  			}
-  			// spectate
-  			else {
-  				buttonsDiv = spectateUI;
-  			}
-  			break;
-  		// player1
-  		case 0:
-  			// waiting on players
-  			if(this.state.players.length < 2){
-  				buttonsDiv = waitUI;
-  			}
-  			// player 1 turn
-  			else if(this.state.turn == 0){
-  				buttonsDiv = playUI;
-  			}
-  			// player 2 turn
-  			else {
-  				buttonsDiv = pendingTurnUI;
-  			}
-  			break;
-  		// player2
-  		case 1:
-  			// waiting on players
-  			if(this.state.players.length < 2){
-  				buttonsDiv = waitUI;
-  			}
-  			// player 1 turn
-  			if(this.state.turn == 0){
-  				buttonsDiv = pendingTurnUI;
-  			}
-  			// player 2 turn
-  			else {
-  				buttonsDiv = playUI;
-  			}
-  			break;
-  	}
-    
+	if (this.state.players.length < 2 && currentUserIdx === -1) {
+		buttonsDiv = joinUI;
+	} else if (currentUserIdx === -1) {
+		buttonsDiv = spectateUI;
+	} else if (this.state.players.length < 2) {
+		buttonsDiv = waitUI;
+	} else if (this.state.turn % 2 === currentUserIdx) {
+		buttonsDiv = playUI;
+	} else {
+		buttonsDiv = pendingTurnUI;
+	}
+
     return (
   		<div>
   			<h4>
-		      {currentUser == this.state.players[this.state.turn] ? "Your turn" : "Player 2's turn"}
+		      {currentUser === this.state.players[this.state.turn % 2] ? "Your turn" : "Player " + ((this.state.turn % 2) + 1)  + "'s turn"}
 		    </h4>
 		    {buttonsDiv}
 	  		<Stage width={window.innerWidth} height={window.innerHeight}>

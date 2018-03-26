@@ -35,6 +35,13 @@ defmodule CheckersWeb.GameChannel do
     #{:reply, {:ok, Game.client_view(game)}, socket}
   end
 
+  def handle_in("play", %{}, socket) do
+    name = socket.assigns[:name]
+    game = Game.play(name, socket.assigns[:user_details])
+    broadcast_update(game)
+    #{:reply, {:ok, Game.client_view(game)}, socket}
+  end
+
   intercept ["update"]
 
   def handle_out("update", payload, socket) do

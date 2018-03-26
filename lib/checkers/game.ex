@@ -44,7 +44,7 @@ defmodule Checkers.Game do
           direction === "up-right" ->
             -3 + if rem(row, 2) === 1, do: -1, else: 0
           true ->
-            -1
+            nil
         end
         next_val = idx + destination_offset
         next_val = if Kernel.abs(row - Integer.floor_div(next_val, 4)) === 1, do: next_val, else: -1
@@ -91,7 +91,7 @@ defmodule Checkers.Game do
         final_candidate < 0 or 32 <= final_candidate or !!Map.get(tiles, final_candidate, nil) ->
           acc
         true ->
-        Map.put(acc, final_candidate, hopped_piece)
+          Map.put(acc, final_candidate, hopped_piece)
       end
     end)
   end
@@ -146,6 +146,17 @@ defmodule Checkers.Game do
       game
     end
 
+  end
+
+  def play(name, user_details) do
+    game = get(name)
+    if find(user_details["email"], game[:players]) === -1 and length(game[:players]) < 2 do
+      GameAgent.put(name,
+        Map.merge(game, %{players: [user_details["email"] | game[:players]]})
+      )
+    else
+      game
+    end
   end
 
   def client_view(game) do

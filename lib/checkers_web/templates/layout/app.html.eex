@@ -10,6 +10,7 @@
     <title>Hello Checkers!</title>
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
     <%= tag :meta, name: "user_token", content: Plug.Conn.get_session(@conn, "user_token") || "" %>
+    <%= tag :meta, name: "user_email", content: if Plug.Conn.get_session(@conn, "user_auth"), do: Plug.Conn.get_session(@conn, "user_auth").extra.raw_info.user["email"] , else: "" %>
   </head>
 
   <body>

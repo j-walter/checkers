@@ -23,14 +23,14 @@ defmodule CheckersWeb.GameChannel do
     !!Map.get(socket.assigns, :user_details, nil)
   end
 
-  def handle_in("valid_moves", %{}, socket) do
+  def handle_in("valid_moves", %{"pending_piece" => pending_piece}, socket) do
     name = socket.assigns[:name]
-    {:reply, {:ok, Game.valid_moves(name, socket.assigns[:user_details])}, socket}
+    {:reply, {:ok, Game.valid_moves(name, socket.assigns[:user_details], pending_piece)}, socket}
   end
 
-  def handle_in("move", %{"from" => from, "to" => to}, socket) do
+  def handle_in("move", %{"pending_piece" => pending_piece}, socket) do
     name = socket.assigns[:name]
-    game = Game.move(name, socket.assigns[:user_details], from, to)
+    game = Game.move(name, socket.assigns[:user_details], pending_piece || [])
     broadcast_update(game)
     #{:reply, {:ok, Game.client_view(game)}, socket}
   end

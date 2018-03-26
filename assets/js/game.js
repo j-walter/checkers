@@ -11,14 +11,13 @@ export default class Game extends React.Component {
   }
 
   getMoves() {
-    this.props.channel.push("valid_moves", {}).receive("ok", state => {
+    this.props.channel.push("valid_moves", {pending_piece: this.state.pending_piece}).receive("ok", state => {
       console.info(state);
     });
   }
 
-  // from is the current index of the piece being moved - to is an array of the hops the client wishes to perform
-  move(from, to) {
-    this.props.channel.push("move", {from: from, to: to}).receive("ok", state => {
+  move() {
+    this.props.channel.push("move", {pending_piece: this.state.pending_piece}).receive("ok", state => {
         this.setState(state);
     });
   }

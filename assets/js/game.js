@@ -27,7 +27,7 @@ export default class Game extends React.Component {
 
     var getMoves = this.getMoves.bind(this);
     this.props.channel.on("update", state => {
-       this.setState(state)
+       this.setState(state);
     });
 
     var caller = this;
@@ -58,7 +58,6 @@ export default class Game extends React.Component {
 
 		var test = this.state.moves[this.state.selectedChecker];
 
-		console.log(test);
 		var key = Object.keys(test).indexOf(checkerIndex);
 		var deletedChecker = this.state.moves[key];
 
@@ -94,9 +93,22 @@ export default class Game extends React.Component {
     });
   }
 
-  play() {
-    this.props.channel.push("play", {}).receive("ok", state => {
+  play(isSubcall) {
+    var authEndpoint = "/auth/google";
+    var channel = this.props.channel.push("play");
+    channel.receive("ok", state => {
         console.info("attempting to join as player");
+        return;
+    });
+    channel.receive("error", _ => {
+        console.info("Failed to join");
+        if (isSubcall) {
+            window.location.href = authEndpoint;
+        } else {
+            $.get(authEndpoint, function (data) {
+                play(true);
+            });
+        }
     });
   }
 
@@ -123,7 +135,7 @@ export default class Game extends React.Component {
 			<div>
 				<button
 					onClick={this.play}>
-					Join Game
+					Play
 				</button>
 				<button
 					onClick={this.disconnect}>

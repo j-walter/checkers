@@ -35,7 +35,7 @@ defmodule CheckersWeb.GameChannel do
     {:reply, {:ok, Game.client_view(game)}, socket}
   end
 
-  def handle_in("play", %{}, socket) do
+  def handle_in("play", _params, socket) do
     name = socket.assigns[:name]
     if authenticated?(socket) do
       game = Game.play(name, socket.assigns[:user_details])

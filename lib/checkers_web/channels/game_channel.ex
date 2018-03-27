@@ -40,7 +40,7 @@ defmodule CheckersWeb.GameChannel do
     if authenticated?(socket) do
       game = Game.play(name, socket.assigns[:user_details])
       broadcast_update(game)
-      {:reply, {:ok}, socket}
+      {:reply, {:ok, %{}}, socket}
     else
       {:reply, {:error, %{reason: "unauthorized"}}, socket}
     end

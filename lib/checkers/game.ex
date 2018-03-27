@@ -121,11 +121,11 @@ defmodule Checkers.Game do
     # we only want to consider all potential moves if pending_piece is nil, otherwise we want the last pending move index
     pieces_to_consider = if !!pending_piece, do: [Enum.at(pending_piece, -1)], else: 0..31
     Enum.reduce(pieces_to_consider, %{}, fn(x, acc) ->
-      tiles = if !!pending_piece, do: move_helper(Enum.at(pending_piece, 0), Map.get(game[:tiles], List.first(pending_piece), nil), List.delete_at(pending_piece, 0), game[:tiles], 2 < length(pending_piece)), else: game[:tiles]
+      tiles = if !!pending_piece, do: move_helper(Enum.at(pending_piece, 0), Map.get(game[:tiles], List.first(pending_piece), nil), List.delete_at(pending_piece, 0), game[:tiles], false), else: game[:tiles]
       piece = Map.get(tiles, x, nil)
       # player can only touch his or her pieces
-      if !!piece and piece[:player] === player_index do
-        ret = Map.put(acc, x, valid_moves_helper(x, piece, game[:tiles], 2 < length(pending_piece || [])))
+      if 0 < length(Map.keys(tiles)) and !!piece and piece[:player] === player_index do
+        ret = Map.put(acc, x, valid_moves_helper(x, piece, tiles, 2 <= length(pending_piece || [])))
         IO.inspect(ret)
         ret
       else

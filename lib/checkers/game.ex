@@ -134,10 +134,10 @@ defmodule Checkers.Game do
   # pending_piece is a sequence of move indexes starting with the origin
   def move(name, user_details, pending_piece) do
     game = get(name)
-    piece_from = Enum.at(game[:tiles], Enum.at(pending_piece, 0), nil)
+    piece_from = Map.get(game[:tiles], Enum.at(pending_piece, 0), nil)
     player_index = find(user_details["email"], game[:players])
     # ensure it is the player's turn and validate that the piece being moved is owned by the player
-    if !!pending_piece and 1 < length(pending_piece) and rem(game[:turn], 2) === player_index and !!piece_from and player_index === piece_from[:player] do
+    if !!piece_from and !!pending_piece and 1 < length(pending_piece) and rem(game[:turn], 2) === player_index and !!piece_from and player_index === piece_from[:player] do
       # remove the old piece
       GameAgent.put(name,
         Map.merge(game, %{tiles: move_helper(Enum.at(pending_piece, 0), piece_from, List.delete_at(pending_piece, 0), game[:tiles], false), turn: game[:turn] + 1})
@@ -150,9 +150,9 @@ defmodule Checkers.Game do
 
   def play(name, user_details) do
     game = get(name)
-    if find(user_details["email"], game[:players]) === -1 and length(game[:players]) < 2 do
+    if find(user_details["email"], game[:players]) === -1 and length(game[:players]) === 1 do
       GameAgent.put(name,
-        Map.merge(game, %{players: [user_details["email"] | game[:players]]})
+        Map.merge(game, %{players: [List.first(game[:players]), user_details["email"]]})
       )
     else
       game

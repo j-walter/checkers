@@ -27,15 +27,23 @@ function start(gameName) {
               console.log("Unable to join", resp);
           });
   }
-  window.location.hash = "";
 }
 
-$(window).on('hashchange',function() {
+function handleHashes() {
     location.hash.substring(1, 5)
     if (location.hash.slice(1) == "create") {
-      start(null);
+        start(null);
+    } else if (location.hash.substring(1, 5) == "join") {
+         start(location.hash.slice(6));
+    } else {
+        location.hash = "";
     }
-    else if (location.hash.substring(1, 5) == "join") {
-      start(location.hash.slice(6));
-    }
+}
+
+$(window).on('hashchange', function() {
+    handleHashes();
+});
+
+$(document).ready(function() {
+    handleHashes();
 });

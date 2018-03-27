@@ -93,20 +93,16 @@ export default class Game extends React.Component {
     });
   }
 
-  play(subCallDict) {
+  play() {
     var authEndpoint = "/auth/google";
-    var authWindow = window.open(authEndpoint, "width= 640, height= 480, left=0, top=0, resizable=yes, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no").blur();
-    setTimeout(function() {
-        authWindow.close();
-        var channel = this.props.channel.push("play");
-        channel.receive("ok", state => {
-            console.info("attempting to join as player");
-            return;
-        });
-        channel.receive("error", _ => {
-            window.location.href = authEndpoint;
-        });
-    }, 2000);
+    var channel = this.props.channel.push("play");
+    channel.receive("ok", state => {
+        console.info("attempting to join as player");
+        return;
+    });
+    channel.receive("error", _ => {
+        window.location.href = authEndpoint;
+    });
   }
 
   reset() {

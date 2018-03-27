@@ -124,7 +124,7 @@ defmodule Checkers.Game do
       tiles = if !!pending_piece and 2 <= length(pending_piece), do: move_helper(Enum.at(pending_piece, 0), Map.get(game[:tiles], List.first(pending_piece), nil), List.delete_at(pending_piece, 0), game[:tiles], false), else: game[:tiles]
       piece = Map.get(tiles, x, nil)
       # player can only touch his or her pieces
-      if 0 < length(Map.keys(tiles)) and !!piece and piece[:player] === player_index do
+      if 0 < length(Map.keys(tiles)) and !!piece and piece[:player] === player_index and (length(pending_piece || []) < 2 || 1 < Integer.floor_div(Kernel.abs(Enum.at(pending_piece, 0) - Enum.at(pending_piece, 1)), 4)) do
         ret = Map.put(acc, x, valid_moves_helper(x, piece, tiles, 2 <= length(pending_piece || [])))
         IO.inspect(ret)
         ret

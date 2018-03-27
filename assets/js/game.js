@@ -54,7 +54,6 @@ export default class Game extends React.Component {
   handleHighlightClick(event){
 		var checkerIndex = event.target.attrs.index;
 		var pend = this.state.pending_piece === null ? [this.state.selectedChecker] : this.state.pending_piece;
-		pend.push(this.state.selectedChecker);
 		pend.push(parseInt(event.target.attrs.index));
 
 		var options = this.state.moves[this.state.selectedChecker];
@@ -115,6 +114,7 @@ export default class Game extends React.Component {
   }
 	
 	render() {
+		console.log(this.state.pending_piece, "moves")
     var currentUserIdx = this.state.players.indexOf(currentUser);
     var isPlayerTurn = this.state.turn % 2 === currentUserIdx;
     var playerColor = null;

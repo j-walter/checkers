@@ -187,18 +187,27 @@ export default class Game extends React.Component {
         buttonsDiv = pendingTurnUI;
     }
 
+    var theta = 0;
+		var xdis = 0;
+		var ydis = 0;
+		if(currentUserIdx === 0){
+			theta = 180;
+			xdis = tileWidth * 8;
+			ydis = tileWidth * 8;
+		}
+    
     var highlighted = null;
-    if(this.state.selectedChecker !== -1){
-        var key = Object.keys(this.state.moves)[0];
-        var tiles = this.state.pending_piece !== null ? this.state.moves[key]: this.state.moves[this.state.selectedChecker];
-        highlighted = (
-            <HighlightedTiles
-                start={this.state.selectedChecker}
-        tiles={tiles}
-        onClick={this.handleHighlightClick}
-    />
-        )
-    }
+		if(this.state.selectedChecker !== -1){
+			var key = Object.keys(this.state.moves)[0];
+			var tiles = this.state.pending_piece !== null ? this.state.moves[key]: this.state.moves[this.state.selectedChecker];
+			highlighted = (
+				<HighlightedTiles
+					start={this.state.selectedChecker}
+        	tiles={tiles}
+        	onClick={this.handleHighlightClick}
+        />
+			)
+		}
 
     var checkers = this.state.tiles.slice();
 
@@ -225,6 +234,9 @@ export default class Game extends React.Component {
 		    </h4>
 		    {buttonsDiv}
 	  		<Stage 
+	  			x={xdis}
+	  			y={ydis}
+	  			rotation={theta}
 	  			width={window.innerWidth} 
 	  			height={window.innerHeight} >
 	        <Layer>

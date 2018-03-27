@@ -118,6 +118,12 @@ export default class Game extends React.Component {
 	render() {
         var currentUserIdx = this.state.players.indexOf(currentUser);
         var isPlayerTurn = this.state.turn % 2 === currentUserIdx;
+        var playerColor = null;
+        if (currentUserIdx === 0) {
+            playerColor = "white";
+        } else if (currentUserIdx === 1) {
+            playerColor = "black"
+        }
 		if(this.state.loading == true){
 			return(
 				<div>
@@ -154,7 +160,7 @@ export default class Game extends React.Component {
 					Back to Menu
 				</button>
 				<button>Concede</button>
-                <h6>&nbsp;</h6>
+                <h6>It's your turn ({playerColor})</h6>
 			</div>
 		);
 

@@ -16,9 +16,9 @@ defmodule Checkers.Game do
         tiles: Enum.reduce(0..31, %{}, fn(x, acc) ->
           cond do
             x <= 11 ->
-              Map.put(acc, x,  %{player: 0, king: false, pending_move: false})
+              Map.put(acc, x,  %{player: 0, king: false})
             20 <= x ->
-              Map.put(acc, x,  %{player: 1, king: false, pending_move: false})
+              Map.put(acc, x,  %{player: 1, king: false})
             true ->
               Map.put(acc, x, nil)
           end
@@ -28,7 +28,6 @@ defmodule Checkers.Game do
   end
 
   # returns the proper row index given a directional checker move
-  #
   def get_move_index(idx, direction, hops) do
     if hops <= 0 do
         idx
@@ -47,6 +46,7 @@ defmodule Checkers.Game do
             nil
         end
         next_val = idx + destination_offset
+        # if we aren't one row away then we overflowed outside the 4 x 4 row (above or below)
         next_val = if Kernel.abs(row - Integer.floor_div(next_val, 4)) === 1, do: next_val, else: -1
         get_move_index(next_val, direction, hops - 1)
     end

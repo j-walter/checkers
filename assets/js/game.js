@@ -54,8 +54,7 @@ export default class Game extends React.Component {
 
   handleHighlightClick(event){
 		var checkerIndex = event.target.attrs.index;
-		var pend = this.state.pending_piece === null ? [] : this.state.pending_piece;
-		pend.push(this.state.selectedChecker);
+		var pend = this.state.pending_piece === null ? [this.state.selectedChecker] : this.state.pending_piece;
 		pend.push(parseInt(event.target.attrs.index));
 
 		var options = this.state.moves[this.state.selectedChecker];
@@ -116,14 +115,15 @@ export default class Game extends React.Component {
   }
 	
 	render() {
-        var currentUserIdx = this.state.players.indexOf(currentUser);
-        var isPlayerTurn = this.state.turn % 2 === currentUserIdx;
-        var playerColor = null;
-        if (currentUserIdx === 0) {
-            playerColor = "white";
-        } else if (currentUserIdx === 1) {
-            playerColor = "black"
-        }
+		console.log(this.state.pending_piece);
+    var currentUserIdx = this.state.players.indexOf(currentUser);
+    var isPlayerTurn = this.state.turn % 2 === currentUserIdx;
+    var playerColor = null;
+    if (currentUserIdx === 0) {
+        playerColor = "white";
+    } else if (currentUserIdx === 1) {
+        playerColor = "black"
+    }
 		if(this.state.loading == true){
 			return(
 				<div>

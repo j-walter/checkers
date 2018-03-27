@@ -125,7 +125,7 @@ defmodule Checkers.Game do
       piece = Map.get(tiles, x, nil)
       # player can only touch his or her pieces
       if 0 < length(Map.keys(tiles)) and !!piece and piece[:player] === player_index do
-        ret = Map.put(acc, x, valid_moves_helper(x, piece, tiles, 2 < length(pending_piece || [])))
+        ret = Map.put(acc, x, valid_moves_helper(x, piece, tiles, 2 <= length(pending_piece || [])))
         IO.inspect(ret)
         ret
       else

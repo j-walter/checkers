@@ -6,6 +6,7 @@ import { Stage, Layer, Rect, Circle } from "react-konva";
 
 const tileWidth = 40;
 const checkerBorder = 10;
+const currentUser = document.getElementsByTagName('meta').user_email.content;
 
 export default class Game extends React.Component {
   constructor(props) {
@@ -13,36 +14,81 @@ export default class Game extends React.Component {
     this.props = props;
     this.state = this.props.state;
 
-    this.handleClick = this.handleClick.bind(this);
+    this.handleCheckerClick = this.handleCheckerClick.bind(this);
+    this.handleHighlightClick = this.handleHighlightClick.bind(this);
     this.play = this.play.bind(this);
     this.move = this.move.bind(this);
     this.reset = this.reset.bind(this);
     this.disconnect = this.disconnect.bind(this);
+    this.getMoves = this.getMoves.bind(this);
+    this.getMoveDelay = this.getMoveDelay.bind(this);
 
-    console.log(this.state);
+    this.state = Object.assign(this.state, {loading: true}, {selectedChecker: -1}, {jumped: []});
 
     var getMoves = this.getMoves.bind(this);
     this.props.channel.on("update", state => {
        this.setState(state)
     });
+
+    var caller = this;
+		this.getMoves(function(x) { 
+			caller.setState(Object.assign({}, x, {loading: false}));
+		});
   }
 
   componentWillUnmount(){
   	this.reset();
   }
 
-  handleClick(event){
-  	console.log(this.state);
-  	console.log(event.target.attrs.index);
+  handleCheckerClick(event){
+		var checkerIndex = event.target.attrs.index;
+		if(checkerIndex === this.state.selectedChecker){
+			this.reset();
+		}
+		else{
+			this.setState({selectedChecker: checkerIndex});
+		}
   }
 
-  getMoves() {
+  handleHighlightClick(event){
+		var checkerIndex = event.target.attrs.index;
+		var pend = this.state.pending_piece === null ? [] : this.state.pending_piece;
+		pend.push(this.state.selectedChecker);
+		pend.push(parseInt(event.target.attrs.index));
+
+		var test = this.state.moves[this.state.selectedChecker];
+
+		console.log(test);
+		var key = Object.keys(test).indexOf(checkerIndex);
+		var deletedChecker = this.state.moves[key];
+
+		var jumped = this.state.jumped !== null ? this.state.jumped : null;
+		if(Object.keys(deletedChecker).length !== 0){
+			jumped.push(deletedChecker);
+		}
+
+		this.setState({selectedChecker: checkerIndex, pending_piece: pend, loading: true, jumped: jumped});
+		var caller = this;
+		this.getMoves(function(x) { 
+			caller.setState(Object.assign({}, x, {loading: false}));
+		});
+	}
+
+  getMoves(func) {
     this.props.channel.push("valid_moves", {pending_piece: this.state.pending_piece}).receive("ok", state => {
-      return state;
+      func({moves: state});
     });
   }
 
+  getMoveDelay(){
+		var caller = this;
+		this.getMoves(function(x) { 
+			caller.setState(Object.assign({}, x, {loading: false}));
+		});
+	}
+
   move() {
+		console.log(this.state.pending_piece, "pending_piece")
     this.props.channel.push("move", {pending_piece: this.state.pending_piece}).receive("ok", state => {
         console.info(this.state.pending_piece);
     });
@@ -55,7 +101,9 @@ export default class Game extends React.Component {
   }
 
   reset() {
-  	this.setState({"pending_piece":null});
+  	this.setState({pending_piece: null, selectedChecker: -1, loading: true, jumped: []}, 
+  		this.getMoveDelay
+		);
   }
 
   disconnect() {
@@ -63,6 +111,14 @@ export default class Game extends React.Component {
   }
 	
 	render() {
+		if(this.state.loading == true){
+			return(
+				<div>
+					<h5> Loading... </h5>
+				</div>
+			);
+		}
+
 		const joinUI = (
 			<div>
 				<button
@@ -115,26 +171,62 @@ export default class Game extends React.Component {
 
 		const pendingTurnUI = (
 			<div>
-				<button>Back to Menu</button>
+				<button
+					onClick={this.disconnect}>
+					Back to Menu
+				</button>
 				<button>Concede</button>
 			</div>
 		); 	
 
   	var buttonsDiv;
-  	var currentUser = document.getElementsByTagName('meta').user_email.content;
-	var currentUserIdx = this.state.players.indexOf(currentUser);
+  	var checkerClicker = null;
+  	
+		var currentUserIdx = this.state.players.indexOf(currentUser);
 
-	if (this.state.players.length < 2 && currentUserIdx === -1) {
-		buttonsDiv = joinUI;
-	} else if (currentUserIdx === -1) {
-		buttonsDiv = spectateUI;
-	} else if (this.state.players.length < 2) {
-		buttonsDiv = waitUI;
-	} else if (this.state.turn % 2 === currentUserIdx) {
-		buttonsDiv = playUI;
-	} else {
-		buttonsDiv = pendingTurnUI;
-	}
+		if (this.state.players.length < 2 && currentUserIdx === -1) {
+			buttonsDiv = joinUI;
+		} else if (currentUserIdx === -1) {
+			buttonsDiv = spectateUI;
+		} else if (this.state.players.length < 2) {
+			buttonsDiv = waitUI;
+		} else if (this.state.turn % 2 === currentUserIdx) {
+			buttonsDiv = playUI;
+			checkerClicker = this.handleCheckerClick;
+		} else {
+			buttonsDiv = pendingTurnUI;
+		}
+
+		var highlighted = null;
+		if(this.state.selectedChecker !== -1){
+			var key = Object.keys(this.state.moves)[0];
+			var tiles = this.state.pending_piece !== null ? this.state.moves[key]: this.state.moves[this.state.selectedChecker];
+			highlighted = (
+				<HighlightedTiles
+					start={this.state.selectedChecker}
+        	tiles={tiles}
+        	onClick={this.handleHighlightClick}
+        />
+			)
+		}
+
+		var checkers = this.state.tiles.slice();
+
+		if(this.state.pending_piece !== null && this.state.pending_piece.length > 1){
+			var startIndex = this.state.pending_piece[0];
+			var endIndex = this.state.pending_piece[this.state.pending_piece.length -1];
+
+			var start = this.state.tiles[startIndex];
+			var end = this.state.tiles[endIndex];
+
+			checkers[startIndex] = end;
+			checkers[endIndex] = start;
+
+			var i;
+			for(i = 0; i < this.state.jumped.length; i++){
+				checkers[this.state.jumped[i]] = null;
+			}
+		}
 
     return (
   		<div>
@@ -142,12 +234,17 @@ export default class Game extends React.Component {
 		      {currentUser === this.state.players[this.state.turn % 2] ? "Your turn" : "Player " + ((this.state.turn % 2) + 1)  + "'s turn"}
 		    </h4>
 		    {buttonsDiv}
-	  		<Stage width={window.innerWidth} height={window.innerHeight}>
+	  		<Stage 
+	  			width={window.innerWidth} 
+	  			height={window.innerHeight} >
 	        <Layer>
 	          <Board />
+	          {highlighted}
 	          <Checkers 
-	          	tiles={this.state.tiles} 
-	          	onClick={this.handleClick}
+	          	tiles={checkers} 
+	          	currentPlayer={currentUserIdx}
+	          	selected={this.state.selectedChecker}
+	          	onClick={checkerClicker}
 	          />
 	        </Layer>
 	      </Stage>
@@ -190,6 +287,35 @@ function Tile(tile) {
 		  width={tileWidth}
 		  height={tileWidth}
 		  fill={color}
+		/>
+	);
+}
+
+function HighlightedTile(tile){
+	let index;
+
+	var row = Math.floor(tile.index / 4);
+	
+	if(row % 2 === 0){
+		index = (tile.index * 2) + 1;
+	}
+	else {
+		index = tile.index * 2;
+	}
+
+	var col = index % 8;
+
+	return(
+		<Rect
+			index={tile.index}
+			key={tile.index}
+			x={col * tileWidth}
+			y={row * tileWidth}
+		  width={tileWidth}
+		  height={tileWidth}
+		  fill={tile.color}
+		  opacity={0.75}
+		  onClick={tile.onClick}
 		/>
 	);
 }
@@ -237,7 +363,7 @@ class Checkers extends React.Component {
 	}
 
 	render(){
-		var checkers = this.state.tiles.slice();
+		var checkers = this.props.tiles.slice();
 
 		return(
 			checkers.map((checker, index) => 
@@ -246,10 +372,38 @@ class Checkers extends React.Component {
 				key={index}
 				index={index}
 				player={checker.player} 
-				pending_move={checker.pending_move}
 				king={checker.king}
-				onClick={this.state.onClick}
+				onClick={(this.props.currentPlayer === checker.player && (this.props.selected === -1 || this.props.selected === index)) ? this.props.onClick : null}
 			/>)
 		);
+	}
+}
+
+class HighlightedTiles extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = this.props;
+	}
+
+	render(){
+		var tiles = Object.keys(this.props.tiles);
+
+		var hTile = tiles.map((tile, index) => 
+		tile == null ? null :
+		<HighlightedTile 
+			key={index}
+			index={tile}
+			color={"green"}
+			onClick={this.props.onClick}
+		/>);
+
+		hTile.push(
+			<HighlightedTile
+				key={-1}
+				index={this.props.start}
+				color={"blue"}
+			/>);
+
+		return hTile;
 	}
 }

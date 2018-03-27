@@ -59,7 +59,6 @@ export default class Game extends React.Component {
   }
 
   disconnect() {
-  	this.props.channel.disconnect();
   	location.reload();
   }
 	
@@ -71,7 +70,7 @@ export default class Game extends React.Component {
 					Join Game
 				</button>
 				<button
-					onClick={null}>
+					onClick={this.disconnect}>
 					Back to Menu
 				</button>
 			</div>
@@ -80,7 +79,7 @@ export default class Game extends React.Component {
 		const spectateUI = (
 			<div>
 				<button
-					onClick={null}>
+					onClick={this.disconnect}>
 					Back to Menu
 				</button>
 			</div>
@@ -89,10 +88,10 @@ export default class Game extends React.Component {
 		const waitUI = (
 			<div>
 				<button
-					onClick={null}>
+					onClick={this.disconnect}>
 					Back to Menu
 				</button>
-				<h7> Waiting on players to join</h7>
+				<h6> Waiting on players to join</h6>
 			</div>
 		);
 
@@ -107,7 +106,7 @@ export default class Game extends React.Component {
 					Reset
 				</button>
 				<button
-					onClick={null}>
+					onClick={this.disconnect}>
 					Back to Menu
 				</button>
 				<button>Concede</button>

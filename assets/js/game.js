@@ -112,6 +112,7 @@ export default class Game extends React.Component {
   }
 
   disconnect() {
+    location.hash = "";
   	location.reload();
   }
 	

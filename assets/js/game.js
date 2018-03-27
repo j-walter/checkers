@@ -93,29 +93,26 @@ export default class Game extends React.Component {
     });
   }
 
-  play(isSubcall) {
+  play(subCallDict) {
     var authEndpoint = "/auth/google";
-    var channel = this.props.channel.push("play");
-    channel.receive("ok", state => {
-        console.info("attempting to join as player");
-        return;
-    });
-    channel.receive("error", _ => {
-        console.info("Failed to join");
-        if (isSubcall) {
+    var authWindow = window.open(authEndpoint, "width= 640, height= 480, left=0, top=0, resizable=yes, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no").blur();
+    setTimeout(function() {
+        authWindow.close();
+        var channel = this.props.channel.push("play");
+        channel.receive("ok", state => {
+            console.info("attempting to join as player");
+            return;
+        });
+        channel.receive("error", _ => {
             window.location.href = authEndpoint;
-        } else {
-            $.get(authEndpoint, function (data) {
-                play(true);
-            });
-        }
-    });
+        });
+    }, 2000);
   }
 
   reset() {
   	this.setState({pending_piece: null, selectedChecker: -1, loading: true, jumped: []}, 
   		this.getMoveDelay
-		);
+    );
   }
 
   disconnect() {
@@ -123,6 +120,8 @@ export default class Game extends React.Component {
   }
 	
 	render() {
+        var currentUserIdx = this.state.players.indexOf(currentUser);
+        var isPlayerTurn = this.state.turn % 2 === currentUserIdx;
 		if(this.state.loading == true){
 			return(
 				<div>
@@ -131,35 +130,16 @@ export default class Game extends React.Component {
 			);
 		}
 
-		const joinUI = (
-			<div>
-				<button
-					onClick={this.play}>
-					Play
-				</button>
-				<button
-					onClick={this.disconnect}>
-					Back to Menu
-				</button>
-			</div>
-		);
-
-		const spectateUI = (
-			<div>
-				<button
-					onClick={this.disconnect}>
-					Back to Menu
-				</button>
-			</div>
-		);
-
 		const waitUI = (
 			<div>
+                {this.state.players.length < 2 && currentUserIdx === -1 ?
+                    <button onClick={this.play}>Play</button>
+                : ""}
 				<button
 					onClick={this.disconnect}>
 					Back to Menu
 				</button>
-				<h6> Waiting on players to join</h6>
+                <h6>{this.state.players.length < 2 ? "Waiting for another player to join" : ""}</h6>
 			</div>
 		);
 
@@ -178,6 +158,7 @@ export default class Game extends React.Component {
 					Back to Menu
 				</button>
 				<button>Concede</button>
+                <h6>&nbsp;</h6>
 			</div>
 		);
 
@@ -188,57 +169,52 @@ export default class Game extends React.Component {
 					Back to Menu
 				</button>
 				<button>Concede</button>
+                <h6>Waiting on opponent</h6>
 			</div>
 		); 	
 
   	var buttonsDiv;
   	var checkerClicker = null;
-  	
-		var currentUserIdx = this.state.players.indexOf(currentUser);
 
-		if (this.state.players.length < 2 && currentUserIdx === -1) {
-			buttonsDiv = joinUI;
-		} else if (currentUserIdx === -1) {
-			buttonsDiv = spectateUI;
-		} else if (this.state.players.length < 2) {
-			buttonsDiv = waitUI;
-		} else if (this.state.turn % 2 === currentUserIdx) {
-			buttonsDiv = playUI;
-			checkerClicker = this.handleCheckerClick;
-		} else {
-			buttonsDiv = pendingTurnUI;
-		}
+    if (this.state.players.length < 2 || currentUserIdx === -1) {
+        buttonsDiv = waitUI;
+    } else if (isPlayerTurn) {
+        buttonsDiv = playUI;
+        checkerClicker = this.handleCheckerClick;
+    } else {
+        buttonsDiv = pendingTurnUI;
+    }
 
-		var highlighted = null;
-		if(this.state.selectedChecker !== -1){
-			var key = Object.keys(this.state.moves)[0];
-			var tiles = this.state.pending_piece !== null ? this.state.moves[key]: this.state.moves[this.state.selectedChecker];
-			highlighted = (
-				<HighlightedTiles
-					start={this.state.selectedChecker}
-        	tiles={tiles}
-        	onClick={this.handleHighlightClick}
-        />
-			)
-		}
+    var highlighted = null;
+    if(this.state.selectedChecker !== -1){
+        var key = Object.keys(this.state.moves)[0];
+        var tiles = this.state.pending_piece !== null ? this.state.moves[key]: this.state.moves[this.state.selectedChecker];
+        highlighted = (
+            <HighlightedTiles
+                start={this.state.selectedChecker}
+        tiles={tiles}
+        onClick={this.handleHighlightClick}
+    />
+        )
+    }
 
-		var checkers = this.state.tiles.slice();
+    var checkers = this.state.tiles.slice();
 
-		if(this.state.pending_piece !== null && this.state.pending_piece.length > 1){
-			var startIndex = this.state.pending_piece[0];
-			var endIndex = this.state.pending_piece[this.state.pending_piece.length -1];
+    if(this.state.pending_piece !== null && this.state.pending_piece.length > 1){
+        var startIndex = this.state.pending_piece[0];
+        var endIndex = this.state.pending_piece[this.state.pending_piece.length -1];
 
-			var start = this.state.tiles[startIndex];
-			var end = this.state.tiles[endIndex];
+        var start = this.state.tiles[startIndex];
+        var end = this.state.tiles[endIndex];
 
-			checkers[startIndex] = end;
-			checkers[endIndex] = start;
+        checkers[startIndex] = end;
+        checkers[endIndex] = start;
 
-			var i;
-			for(i = 0; i < this.state.jumped.length; i++){
-				checkers[this.state.jumped[i]] = null;
-			}
-		}
+        var i;
+        for(i = 0; i < this.state.jumped.length; i++){
+            checkers[this.state.jumped[i]] = null;
+        }
+    }
 
     return (
   		<div>

@@ -16,9 +16,9 @@ defmodule Checkers.Game do
         tiles: Enum.reduce(0..31, %{}, fn(x, acc) ->
           cond do
             x <= 11 ->
-              Map.put(acc, x,  %{player: 0, king: false, pending_move: false})
+              Map.put(acc, x,  %{player: 0, king: false})
             20 <= x ->
-              Map.put(acc, x,  %{player: 1, king: false, pending_move: false})
+              Map.put(acc, x,  %{player: 1, king: false})
             true ->
               Map.put(acc, x, nil)
           end
@@ -28,7 +28,6 @@ defmodule Checkers.Game do
   end
 
   # returns the proper row index given a directional checker move
-  #
   def get_move_index(idx, direction, hops) do
     if hops <= 0 do
         idx
@@ -47,6 +46,7 @@ defmodule Checkers.Game do
             nil
         end
         next_val = idx + destination_offset
+        # if we aren't one row away then we overflowed outside the 4 x 4 row (above or below)
         next_val = if Kernel.abs(row - Integer.floor_div(next_val, 4)) === 1, do: next_val, else: -1
         get_move_index(next_val, direction, hops - 1)
     end
@@ -68,7 +68,7 @@ defmodule Checkers.Game do
   end
 
   # returns a list of the valid moves and the pieces eliminated if a particular move is made
-  def valid_moves_helper(idx, piece, tiles) do
+  def valid_moves_helper(idx, piece, tiles, only_hops) do
     player_index = piece[:player]
     possible_directions = cond do
       piece[:king] ->
@@ -88,7 +88,7 @@ defmodule Checkers.Game do
       hopped_piece = if !!Map.get(tiles, direct_candidate, []) and Map.get(tiles, direct_candidate, nil)[:player] != piece[:player] and !Map.get(tiles, hop_candidate, []), do: direct_candidate, else: nil
       final_candidate = if !!hopped_piece, do: hop_candidate, else: direct_candidate
       cond do
-        final_candidate < 0 or 32 <= final_candidate or !!Map.get(tiles, final_candidate, nil) ->
+        (only_hops and final_candidate !== hop_candidate) or final_candidate < 0 or 32 <= final_candidate or !!Map.get(tiles, final_candidate, nil) ->
           acc
         true ->
           Map.put(acc, final_candidate, hopped_piece)
@@ -105,7 +105,7 @@ defmodule Checkers.Game do
       piece = Map.get(game[:tiles], x, nil)
       # player can only touch his or her pieces
       if !!piece and piece[:player] === player_index do
-        Map.put(acc, x, valid_moves_helper(x, piece, game[:tiles]))
+        Map.put(acc, x, valid_moves_helper(x, piece, game[:tiles], 2 < length(pending_piece || [])))
       else
         Map.put(acc, x, %{})
       end
@@ -116,7 +116,7 @@ defmodule Checkers.Game do
     if Enum.empty?(pending_piece) do
         tiles
     else
-      next_possible_moves = valid_moves_helper(idx, piece, tiles)
+      next_possible_moves = valid_moves_helper(idx, piece, tiles, only_hops)
       next_index = List.first(pending_piece)
       if Map.has_key?(next_possible_moves, next_index) and (!only_hops or !!Map.get(next_possible_moves, next_index, nil)) do
         # we need to see this the piece became a king

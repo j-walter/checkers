@@ -325,6 +325,8 @@ function Checker(checker) {
 	var color = checker.player == 0 ? "white" : "black";
 	var checkerWidth = tileWidth - checkerBorder;
 
+	var borderColor = checker.king ? "yellow" : "gray";
+
 	return(
 		<Circle
 			index={checker.index}
@@ -333,7 +335,8 @@ function Checker(checker) {
 			width={checkerWidth}
 		  height={checkerWidth}
 		  fill={color}
-		  stroke={"gray"}
+		  stroke={borderColor}
+		  strokeWidth={5}
 		  onClick={checker.onClick}
 		 />
 	);

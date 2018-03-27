@@ -28,6 +28,8 @@ export default class Game extends React.Component {
     var getMoves = this.getMoves.bind(this);
     this.props.channel.on("update", state => {
        this.setState(state);
+       console.log("ding");
+       this.reset();
     });
 
     var caller = this;
@@ -56,16 +58,15 @@ export default class Game extends React.Component {
 		pend.push(this.state.selectedChecker);
 		pend.push(parseInt(event.target.attrs.index));
 
-		var test = this.state.moves[this.state.selectedChecker];
-
-		var key = Object.keys(test).indexOf(checkerIndex);
-		var deletedChecker = this.state.moves[key];
+		var options = this.state.moves[this.state.selectedChecker];
+		var key = Object.keys(options).indexOf(checkerIndex);
+		var deletedCheckerKey = Object.keys(options)[key];
+		var deletedChecker = options[deletedCheckerKey];
 
 		var jumped = this.state.jumped !== null ? this.state.jumped : null;
-		if(Object.keys(deletedChecker).length !== 0){
+		if(deletedChecker !== null){
 			jumped.push(deletedChecker);
 		}
-
 		this.setState({selectedChecker: checkerIndex, pending_piece: pend, loading: true, jumped: jumped});
 		var caller = this;
 		this.getMoves(function(x) { 
@@ -87,7 +88,6 @@ export default class Game extends React.Component {
 	}
 
   move() {
-		console.log(this.state.pending_piece, "pending_piece")
     this.props.channel.push("move", {pending_piece: this.state.pending_piece}).receive("ok", state => {
         console.info(this.state.pending_piece);
     });

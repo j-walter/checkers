@@ -74,9 +74,32 @@ export default class Game extends React.Component {
 	}
 
   getMoves(func) {
-    this.props.channel.push("valid_moves", {pending_piece: this.state.pending_piece}).receive("ok", state => {
-      func({moves: state});
-    });
+  	if(this.state.pending_piece !== null){
+  		console.log(this.state.pending_piece);
+  		var moves = this.state.pending_piece.slice()
+	  	var last = moves.pop();
+	  	console.log(this.state.pending_piece);
+
+	  	var movesTamper = [];
+	  	var obj = {};
+	  	obj[last] = {};
+	  	movesTamper.push(obj)
+
+	  	console.log(movesTamper[0], "tamp");
+
+	  	if(last < 4 || last > 27){
+	  		func({moves: movesTamper[0]});
+	  	}else {
+	  		this.props.channel.push("valid_moves", {pending_piece: this.state.pending_piece}).receive("ok", state => {
+		      func({moves: state});
+		    });
+	  	}
+	  }
+	 	else {
+			this.props.channel.push("valid_moves", {pending_piece: this.state.pending_piece}).receive("ok", state => {
+      	func({moves: state});
+    	});
+	 	}
   }
 
   getMoveDelay(){

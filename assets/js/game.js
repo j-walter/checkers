@@ -124,13 +124,6 @@ export default class Game extends React.Component {
     } else if (currentUserIdx === 1) {
         playerColor = "black"
     }
-		if(this.state.loading == true){
-			return(
-				<div>
-					<h5> Loading... </h5>
-				</div>
-			);
-		}
 
 		const waitUI = (
 			<div>

@@ -51,7 +51,7 @@ defmodule Checkers.Game do
         next_val_row = Integer.floor_div(next_val, 4)
         next_val_row_offset = rem(next_val, 4)
         # if we aren't one row or relative index away then we overflowed outside the 4 x 4 row (above or below)
-        next_val = if Kernel.abs(row - next_val_row) === 1 and Kernel.abs(row_offset - next_val_row_offset) === 1, do: next_val, else: -1
+        next_val = if Kernel.abs(row - next_val_row) === 1 and Kernel.abs(row_offset - next_val_row_offset) < 1, do: next_val, else: -1
         get_move_index(next_val, direction, hops - 1)
     end
   end

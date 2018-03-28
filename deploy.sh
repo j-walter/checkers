@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PORT=5101
+export PORT=5102
 export MIX_ENV=prod
 
 INITIAL_DIR=`pwd`
@@ -27,11 +27,13 @@ config :checkers, Checkers.Endpoint,
 " > $INITIAL_DIR/config/prod.secret.exs
 
 chown checkers:checkers "$INITIAL_DIR/config/prod.secret.exs"
+chown checkers:checkers "/home/checkers/" -R
 
 su postgres -c "psql -c \"CREATE USER checkers;\""
 su postgres -c "psql -c \"ALTER USER checkers WITH PASSWORD '${POSTGRES_PASSWORD}';\""
 su postgres -c "psql -c \"CREATE DATABASE checkers;\""
 su postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE checkers to checkers;\""
+
 su checkers -c "
 cd "$INITIAL_DIR"
 mix deps.get

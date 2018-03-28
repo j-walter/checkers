@@ -150,6 +150,13 @@ defmodule Checkers.Game do
 
   end
 
+  def concede(name, user_details, winner) do
+    game = get(name)
+    GameAgent.put(name,
+      Map.merge(game, %{winner: winner})
+    )
+  end
+
   def play(name, user_details) do
     game = get(name)
     if find(user_details["email"], game[:players]) === -1 and length(game[:players]) === 1 do

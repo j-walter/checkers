@@ -22,6 +22,7 @@ export default class Game extends React.Component {
     this.disconnect = this.disconnect.bind(this);
     this.getMoves = this.getMoves.bind(this);
     this.getMoveDelay = this.getMoveDelay.bind(this);
+    this.concede = this.concede.bind(this);
 
     this.state = Object.assign(this.state, {loading: true}, {selectedChecker: -1}, {jumped: []});
 
@@ -109,6 +110,15 @@ export default class Game extends React.Component {
     );
   }
 
+  concede(){
+  	var currentUserIdx = this.state.players.indexOf(currentUser);
+  	var winner = currentUserIdx === 1 ? 0 : 1;
+
+  	this.props.channel.push("concede", {winner: winner}).receive("ok", state => {
+        console.info(this.state.winner);
+    });
+  }
+
   disconnect() {
     location.hash = "";
   	location.reload();
@@ -152,8 +162,11 @@ export default class Game extends React.Component {
 					onClick={this.disconnect}>
 					Back to Menu
 				</button>
-				<button>Concede</button>
-                <h6>It's your turn ({playerColor})</h6>
+				<button
+					onClick={this.concede}>
+					Concede
+				</button>
+        <h6>It's your turn ({playerColor})</h6>
 			</div>
 		);
 
@@ -163,20 +176,25 @@ export default class Game extends React.Component {
 					onClick={this.disconnect}>
 					Back to Menu
 				</button>
-				<button>Concede</button>
-                <h6>Waiting on opponent</h6>
+				<button
+					onClick={this.concede}>
+					Concede
+				</button>
+        <h6>Waiting on opponent</h6>
 			</div>
 		);
 
 		const gameOverUI = (
-            <div>
-               <button
+			<div>
+				<button
 					onClick={this.disconnect}>
 					Back to Menu
 				</button>
-            <h6>{this.state.winner === currentUserIdx ? "You Win!!" : "You lose :("}</h6>
-            </div>
-        )
+				<h6>
+					{this.state.winner === currentUserIdx ? "You Win!!" : "You lose :("}
+				</h6>
+			</div>
+    )
 
   	var buttonsDiv;
   	var checkerClicker = null;

@@ -87,9 +87,17 @@ export default class Game extends React.Component {
 	}
 
   move() {
-    this.props.channel.push("move", {pending_piece: this.state.pending_piece}).receive("ok", state => {
+  	var key = Object.keys(this.state.moves)[0];
+		var tiles = this.state.pending_piece !== null ? this.state.moves[key]: this.state.moves[this.state.selectedChecker];
+		tiles = Object.keys(tiles);
+
+		if(tiles.length > 0){
+			console.log("must jump");
+		}else {
+			this.props.channel.push("move", {pending_piece: this.state.pending_piece}).receive("ok", state => {
         console.info(this.state.pending_piece);
-    });
+   		});
+		}
   }
 
   play() {

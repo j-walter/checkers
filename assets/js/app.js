@@ -34,8 +34,10 @@ function handleHashes() {
     if (location.hash.slice(1) == "create") {
         start(null);
     } else if (location.hash.substring(1, 5) == "join") {
-         start(location.hash.slice(6));
-    } else {
+        start(location.hash.slice(6));
+    } else if (location.hash.slice(1) == "reload") {
+        location.assign(location.origin);
+    }else {
         location.hash = "";
     }
 }

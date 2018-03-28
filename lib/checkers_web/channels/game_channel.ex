@@ -44,10 +44,14 @@ defmodule CheckersWeb.GameChannel do
     else
       {:reply, {:error, %{reason: "unauthorized"}}, socket}
     end
-
   end
 
-  intercept ["update"]
+  def handle_in("concede", _params, socket) do
+    name = socket.assigns[:name]
+    game = Game.concede(name, socket.assigns[:user_details])
+    broadcast_update(game)
+    {:reply, {:ok, Game.client_view(game)}, socket}
+  end
 
   def handle_out("update", payload, socket) do
     push socket, "update", payload

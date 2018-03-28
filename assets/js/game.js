@@ -22,13 +22,13 @@ export default class Game extends React.Component {
     this.disconnect = this.disconnect.bind(this);
     this.getMoves = this.getMoves.bind(this);
     this.getMoveDelay = this.getMoveDelay.bind(this);
+    this.concede = this.concede.bind(this);
 
     this.state = Object.assign(this.state, {loading: true}, {selectedChecker: -1}, {jumped: []});
 
     var getMoves = this.getMoves.bind(this);
     this.props.channel.on("update", state => {
        this.setState(state);
-       console.log("ding");
        this.reset();
     });
 
@@ -110,9 +110,17 @@ export default class Game extends React.Component {
 	}
 
   move() {
-    this.props.channel.push("move", {pending_piece: this.state.pending_piece}).receive("ok", state => {
+  	var key = Object.keys(this.state.moves)[0];
+		var tiles = this.state.pending_piece !== null ? this.state.moves[key]: this.state.moves[this.state.selectedChecker];
+		tiles = Object.keys(tiles);
+
+		if(tiles.length > 0){
+			window.alert("once a piece hops another it must continue hopping til it has no more moves");
+		}else {
+			this.props.channel.push("move", {pending_piece: this.state.pending_piece}).receive("ok", state => {
         console.info(this.state.pending_piece);
-    });
+   		});
+		}
   }
 
   play() {
@@ -133,12 +141,21 @@ export default class Game extends React.Component {
     );
   }
 
+  concede(){
+  	var currentUserIdx = this.state.players.indexOf(currentUser);
+  	var winner = currentUserIdx === 1 ? 0 : 1;
+
+  	this.props.channel.push("concede").receive("ok", state => {
+        console.info(this.state.winner);
+    });
+  }
+
   disconnect() {
+    location.hash = "";
   	location.reload();
   }
 	
 	render() {
-		console.log(this.state.pending_piece);
     var currentUserIdx = this.state.players.indexOf(currentUser);
     var isPlayerTurn = this.state.turn % 2 === currentUserIdx;
     var playerColor = null;
@@ -147,13 +164,6 @@ export default class Game extends React.Component {
     } else if (currentUserIdx === 1) {
         playerColor = "black"
     }
-		if(this.state.loading == true){
-			return(
-				<div>
-					<h5> Loading... </h5>
-				</div>
-			);
-		}
 
 		const waitUI = (
 			<div>
@@ -182,8 +192,11 @@ export default class Game extends React.Component {
 					onClick={this.disconnect}>
 					Back to Menu
 				</button>
-				<button>Concede</button>
-                <h6>It's your turn ({playerColor})</h6>
+				<button
+					onClick={this.concede}>
+					Concede
+				</button>
+        <h6>It's your turn ({playerColor})</h6>
 			</div>
 		);
 
@@ -193,16 +206,33 @@ export default class Game extends React.Component {
 					onClick={this.disconnect}>
 					Back to Menu
 				</button>
-				<button>Concede</button>
-                <h6>Waiting on opponent</h6>
+				<button
+					onClick={this.concede}>
+					Concede
+				</button>
+        <h6>Waiting on opponent</h6>
 			</div>
-		); 	
+		);
+
+		const gameOverUI = (
+			<div>
+				<button
+					onClick={this.disconnect}>
+					Back to Menu
+				</button>
+				<h6>
+					{this.state.winner === currentUserIdx ? "You Win!!" : "You lose :("}
+				</h6>
+			</div>
+    )
 
   	var buttonsDiv;
   	var checkerClicker = null;
 
     if (this.state.players.length < 2 || currentUserIdx === -1) {
         buttonsDiv = waitUI;
+    } else if (this.state.winner !== null) {
+        buttonsDiv = gameOverUI;
     } else if (isPlayerTurn) {
         buttonsDiv = playUI;
         checkerClicker = this.handleCheckerClick;
@@ -252,9 +282,7 @@ export default class Game extends React.Component {
 
     return (
   		<div>
-  			<h4>
-		      {currentUser === this.state.players[this.state.turn % 2] ? "Your turn" : "Player " + ((this.state.turn % 2) + 1)  + "'s turn"}
-		    </h4>
+            <br />
 		    {buttonsDiv}
 	  		<Stage 
 	  			x={xdis}
@@ -414,6 +442,7 @@ class HighlightedTiles extends React.Component {
 	}
 
 	render(){
+
 		var tiles = Object.keys(this.props.tiles);
 
 		var hTile = tiles.map((tile, index) => 

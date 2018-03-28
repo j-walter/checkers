@@ -419,6 +419,13 @@ class HighlightedTiles extends React.Component {
 	}
 
 	render(){
+	    console.info("highlighted");
+	    console.info(this.props.tiles);
+	    console.info(this.props.tiles  == null);
+	    if (this.props.tiles  == null) {
+	        return;
+        }
+
 		var tiles = Object.keys(this.props.tiles);
 
 		var hTile = tiles.map((tile, index) => 

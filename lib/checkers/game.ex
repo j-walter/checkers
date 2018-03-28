@@ -127,12 +127,12 @@ defmodule Checkers.Game do
     game = get(name)
     player_index = find(user_details["email"], game[:players])
     # we only want to consider all potential moves if pending_piece is nil, otherwise we want the last pending move index
-    pieces_to_consider = if !!pending_piece, do: [Enum.at(pending_piece, -1)], else: 0..31
+    pieces_to_consider = if !!pending_piece, do: [Enum.at(pending_piece, -2)], else: 0..31
     Enum.reduce(pieces_to_consider, %{}, fn(x, acc) ->
-      tiles = if !!pending_piece and 2 <= length(pending_piece), do: move_helper(Enum.at(pending_piece, 0), Map.get(game[:tiles], List.first(pending_piece), nil), List.delete_at(pending_piece, 0), game[:tiles], false), else: game[:tiles]
+      tiles = if !!pending_piece and 2 <= length(pending_piece), do: move_helper(Enum.at(pending_piece, 0), Map.get(game[:tiles], List.first(pending_piece), nil), Enum.drop(List.delete_at(pending_piece, 0), -1), game[:tiles], false), else: game[:tiles]
       piece = Map.get(tiles, x, nil)
       # player can only touch his or her pieces
-      if 0 < length(Map.keys(tiles)) and !!piece and Map.get(game[:tiles], x, nil)[:king] === piece[:king] and piece[:player] === player_index and (length(pending_piece || []) < 2 || 1 < Kernel.abs(Integer.floor_div(Enum.at(pending_piece, 0), 4) - Integer.floor_div(Enum.at(pending_piece, 1), 4))) do
+      if 0 < length(Map.keys(tiles)) and !!piece and piece[:player] === player_index and (length(pending_piece || []) < 2 || 1 < Kernel.abs(Integer.floor_div(Enum.at(pending_piece, 0), 4) - Integer.floor_div(Enum.at(pending_piece, 1), 4))) do
         Map.put(acc, x, valid_moves_helper(x, piece, tiles, 2 <= length(pending_piece || [])))
       else
         Map.put(acc, x, %{})
@@ -148,9 +148,11 @@ defmodule Checkers.Game do
     # ensure it is the player's turn and validate that the piece being moved is owned by the player
     if !game[:winner] and 2 === length(game[:players]) and !!piece_from and !!pending_piece and 1 < length(pending_piece) and rem(game[:turn], 2) === player_index and !!piece_from and player_index === piece_from[:player] do
       new_tiles = move_helper(Enum.at(pending_piece, 0), piece_from, List.delete_at(pending_piece, 0), game[:tiles], false)
-      GameAgent.put(name,
+      test = GameAgent.put(name,
         Map.merge(game, %{tiles: new_tiles, turn: game[:turn] + 1, winner: (if 0 === length(Enum.filter(Map.values(new_tiles), fn(x) -> !!x and x[:player] !== player_index end)), do: player_index, else: nil)})
       )
+      IO.inspect(test)
+      test
     else
       game
     end

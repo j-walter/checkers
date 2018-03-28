@@ -173,13 +173,25 @@ export default class Game extends React.Component {
 				<button>Concede</button>
                 <h6>Waiting on opponent</h6>
 			</div>
-		); 	
+		);
+
+		const gameOverUI = (
+            <div>
+               <button
+					onClick={this.disconnect}>
+					Back to Menu
+				</button>
+            <h6>{this.state.winner === currentUserIdx ? "You Win!!" : "You lose :("}</h6>
+            </div>
+        )
 
   	var buttonsDiv;
   	var checkerClicker = null;
 
     if (this.state.players.length < 2 || currentUserIdx === -1) {
         buttonsDiv = waitUI;
+    } else if (this.state.winner !== null) {
+        buttonsDiv = gameOverUI;
     } else if (isPlayerTurn) {
         buttonsDiv = playUI;
         checkerClicker = this.handleCheckerClick;
@@ -229,9 +241,7 @@ export default class Game extends React.Component {
 
     return (
   		<div>
-  			<h4>
-		      {currentUser === this.state.players[this.state.turn % 2] ? "Your turn" : "Player " + ((this.state.turn % 2) + 1)  + "'s turn"}
-		    </h4>
+            <br />
 		    {buttonsDiv}
 	  		<Stage 
 	  			x={xdis}

@@ -12,6 +12,7 @@ defmodule Checkers.Game do
         turn: 0,
         pending_piece: nil,
         players: [user_details["email"]],
+        winner: nil,
         # a game is composed of 32 pieces
         tiles: Enum.reduce(0..31, %{}, fn(x, acc) ->
           cond do
@@ -124,10 +125,8 @@ defmodule Checkers.Game do
       tiles = if !!pending_piece and 2 <= length(pending_piece), do: move_helper(Enum.at(pending_piece, 0), Map.get(game[:tiles], List.first(pending_piece), nil), List.delete_at(pending_piece, 0), game[:tiles], false), else: game[:tiles]
       piece = Map.get(tiles, x, nil)
       # player can only touch his or her pieces
-      if 0 < length(Map.keys(tiles)) and !!piece and piece[:player] === player_index and (length(pending_piece || []) < 2 || 1 < Integer.floor_div(Kernel.abs(Enum.at(pending_piece, 0) - Enum.at(pending_piece, 1)), 4)) do
-        ret = Map.put(acc, x, valid_moves_helper(x, piece, tiles, 2 <= length(pending_piece || [])))
-        IO.inspect(ret)
-        ret
+      if 0 < length(Map.keys(tiles)) and !!piece and piece[:player] === player_index and (length(pending_piece || []) < 2 || 1 < Kernel.abs(Integer.floor_div(Enum.at(pending_piece, 0), 4) - Integer.floor_div(Enum.at(pending_piece, 1), 4)) do
+        Map.put(acc, x, valid_moves_helper(x, piece, tiles, 2 <= length(pending_piece || [])))
       else
         Map.put(acc, x, %{})
       end
@@ -140,10 +139,10 @@ defmodule Checkers.Game do
     piece_from = Map.get(game[:tiles], Enum.at(pending_piece, 0), nil)
     player_index = find(user_details["email"], game[:players])
     # ensure it is the player's turn and validate that the piece being moved is owned by the player
-    if !!piece_from and !!pending_piece and 1 < length(pending_piece) and rem(game[:turn], 2) === player_index and !!piece_from and player_index === piece_from[:player] do
-      # remove the old piece
+    if !game[:winner] and 2 === length(game[:players]) and !!piece_from and !!pending_piece and 1 < length(pending_piece) and rem(game[:turn], 2) === player_index and !!piece_from and player_index === piece_from[:player] do
+      new_tiles = move_helper(Enum.at(pending_piece, 0), piece_from, List.delete_at(pending_piece, 0), game[:tiles], false)
       GameAgent.put(name,
-        Map.merge(game, %{tiles: move_helper(Enum.at(pending_piece, 0), piece_from, List.delete_at(pending_piece, 0), game[:tiles], false), turn: game[:turn] + 1})
+        Map.merge(game, %{tiles: new_tiles, turn: game[:turn] + 1, winner: (if 0 === length(Enum.filter(Map.values(new_tiles), fn(x) -> !!x and x[:player] !== player_index end)), do: player_index, else: nil)})
       )
     else
       game

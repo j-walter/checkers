@@ -114,7 +114,7 @@ export default class Game extends React.Component {
   	var currentUserIdx = this.state.players.indexOf(currentUser);
   	var winner = currentUserIdx === 1 ? 0 : 1;
 
-  	this.props.channel.push("concede", {winner: winner}).receive("ok", state => {
+  	this.props.channel.push("concede").receive("ok", state => {
         console.info(this.state.winner);
     });
   }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PORT=5101
+export PORT=5102
 export MIX_ENV=prod
 
 INITIAL_DIR=`pwd`

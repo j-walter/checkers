@@ -46,9 +46,9 @@ defmodule CheckersWeb.GameChannel do
     end
   end
 
-  def handle_in("concede", %{"winner" => winner}, socket) do
+  def handle_in("concede", _params, socket) do
     name = socket.assigns[:name]
-    game = Game.concede(name, socket.assigns[:user_details], winner || [])
+    game = Game.concede(name, socket.assigns[:user_details])
     broadcast_update(game)
     {:reply, {:ok, Game.client_view(game)}, socket}
   end

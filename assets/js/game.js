@@ -92,7 +92,7 @@ export default class Game extends React.Component {
 		tiles = Object.keys(tiles);
 
 		if(tiles.length > 0){
-			console.log("must jump");
+			window.alert("once a piece hops another it must continue hopping til it has no more moves");
 		}else {
 			this.props.channel.push("move", {pending_piece: this.state.pending_piece}).receive("ok", state => {
         console.info(this.state.pending_piece);

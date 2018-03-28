@@ -125,14 +125,6 @@ export default class Game extends React.Component {
   }
 	
 	render() {
-		if(this.state.loading == true){
-			return(
-				<div>
-					<h5> Loading... </h5>
-				</div>
-			);
-		}
-
     var currentUserIdx = this.state.players.indexOf(currentUser);
     var isPlayerTurn = this.state.turn % 2 === currentUserIdx;
     var playerColor = null;

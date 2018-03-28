@@ -3,6 +3,7 @@
 <br>
 <div id="game-list-bar">
 <%= if !!Checkers.AuthAgent.get(Plug.Conn.get_session(@conn, "user_token")) do %>
+<a class="btn btn-primary" href="#reload">Reload</a>
 <a class="btn btn-primary" href="#create">Create</a>
 <% else %>
 <a class="btn btn-primary" href="/auth/google">Create</a>
@@ -22,11 +23,15 @@
 <tr>
 <td><%= game.name %></td>
 <%= if 2 === length(game.players) do %>
-<td>In progress</td>
+	<%= if 0 === game.winner || 1 === game.winner do %>
+		<td>Completed</td>
+	<% else %>
+		<td>In progress</td>
+	<% end %>
 <% else %>
 <td>Awaiting players</td>
 <% end %>
-<td><button type="button" class="btn btn-primary">Join</button></td>
+<td><a class="btn btn-primary" href="#join-<%=game.name%>">Join</a></td>
 </tr>
 <% end %>
 </tbody>

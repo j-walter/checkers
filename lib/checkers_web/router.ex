@@ -9,14 +9,8 @@ defmodule CheckersWeb.Router do
     plug :put_secure_browser_headers
   end
 
-  pipeline :cookie_auth do
-    plug CheckersWeb.Authentication
-  end
-
-  scope "/game", CheckersWeb do
-    pipe_through :browser
-    get "/", PageController, :index
-    get "/*path", RedirectController, :index
+  pipeline :inject_token do
+    plug CheckersWeb.InjectToken
   end
 
   scope "/auth", CheckersWeb do
@@ -29,6 +23,7 @@ defmodule CheckersWeb.Router do
 
   scope "/", CheckersWeb do
     pipe_through :browser
+    pipe_through :inject_token
     get "/", GameController, :index
     get "/*path", RedirectController, :index
   end

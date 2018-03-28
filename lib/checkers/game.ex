@@ -97,6 +97,10 @@ defmodule Checkers.Game do
     end)
   end
 
+  def king_transition(idx, piece) do
+    if piece[:player] === 0 and 28 <= idx or piece[:player] === 1 and idx <= 3, do: Map.merge(piece, %{king: true}), else: piece
+  end
+
     def move_helper(idx, piece, pending_piece, tiles, only_hops) do
     if Enum.empty?(pending_piece) do
         tiles
@@ -105,7 +109,7 @@ defmodule Checkers.Game do
       next_index = List.first(pending_piece)
       if Map.has_key?(next_possible_moves, next_index) and (!only_hops or !!Map.get(next_possible_moves, next_index, nil)) do
         # we need to see this the piece became a king
-        new_piece = if piece[:player] === 0 and 28 <= next_index or piece[:player] === 1 and next_index <= 3, do: Map.merge(piece, %{king: true}), else: piece
+        new_piece = king_transition(next_index, piece)
         new_tiles = Map.put(Map.put(tiles, idx, nil), next_index, new_piece)
         hopped_piece = Map.get(next_possible_moves, next_index, nil)
         move_helper(List.first(pending_piece), new_piece, List.delete_at(pending_piece, 0), (if !hopped_piece, do: new_tiles, else: Map.put(new_tiles, hopped_piece, nil)), true)
@@ -125,7 +129,7 @@ defmodule Checkers.Game do
       tiles = if !!pending_piece and 2 <= length(pending_piece), do: move_helper(Enum.at(pending_piece, 0), Map.get(game[:tiles], List.first(pending_piece), nil), List.delete_at(pending_piece, 0), game[:tiles], false), else: game[:tiles]
       piece = Map.get(tiles, x, nil)
       # player can only touch his or her pieces
-      if 0 < length(Map.keys(tiles)) and !!piece and piece[:player] === player_index and (length(pending_piece || []) < 2 || 1 < Kernel.abs(Integer.floor_div(Enum.at(pending_piece, 0), 4) - Integer.floor_div(Enum.at(pending_piece, 1), 4))) do
+      if 0 < length(Map.keys(tiles)) and !!piece and Map.get(game[:tiles], x, nil)[:king] === piece[:king] and piece[:player] === player_index and (length(pending_piece || []) < 2 || 1 < Kernel.abs(Integer.floor_div(Enum.at(pending_piece, 0), 4) - Integer.floor_div(Enum.at(pending_piece, 1), 4))) do
         Map.put(acc, x, valid_moves_helper(x, piece, tiles, 2 <= length(pending_piece || [])))
       else
         Map.put(acc, x, %{})
